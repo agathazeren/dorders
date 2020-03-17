@@ -2,4 +2,4 @@
 template_dir = "templates"
 
 [development]
-log = "debug"
+log = "normal"

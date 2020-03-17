@@ -1,21 +1,25 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::fmt::Display;
+use std::fmt;
 
-enum Order {
+
+
+pub enum Order {
     Hold(UnitType, Province),
     Move(UnitType, Province, Province),
     Support(UnitType, Province, UnitType, Province, Province),
     Convoy(UnitType, Province, UnitType, Province, Province),
 }
 
-enum UnitType {
+pub enum UnitType {
     Army,
     Fleet,
 }
 
-struct Province(u8);
+pub struct Province(u8);
 
-enum ParseError {
+pub enum ParseError {
     UnknownError,
     BadUnitType(String),
     MissingComponent,
@@ -96,6 +100,76 @@ impl std::str::FromStr for Province {
         }
     }
 }
+
+impl Display for Order{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result{
+        match self{
+            Self::Move(ty,fm,to) => write!(f,"{} {}-{}",ty,fm,to),
+            Self::Hold(ty,prov) => write!(f,"{} {} H",ty,prov),
+            Self::Convoy(ty,prov,t_ty,t_fm,t_to) => write!(f,"{} {} C {} {}-{}",ty,prov,t_ty,t_fm,t_to),
+            Self::Support(ty,prov,t_ty,t_fm,t_to) => write!(f,"{} {} S {} {}-{}",ty,prov,t_ty,t_fm,t_to),
+        }
+    }
+
+}
+
+impl Display for UnitType{
+    fn fmt(&self, f:&mut fmt::Formatter<'_>) -> fmt::Result{
+        write!(f,"{}",match self {
+            Self::
+            Army => "A",
+            Self::Fleet => "F",
+        })
+    }
+}
+
+impl Display for Province{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>)-> fmt::Result{
+        write!(f,"{}",PROVINCE_IDS.iter().find(|(_,id)|**id==self.0).unwrap().0)
+    }
+
+}
+
+impl Display for ParseError{
+    fn fmt(&self, f:&mut fmt::Formatter<'_>)-> fmt::Result{
+        match self{
+            Self::UnknownError => write!(f,"unknown error parseing orders"),
+            Self::BadUnitType(s) => write!(f,"bad unit type \"{}\"",s),
+            Self::MissingComponent => write!(f,"missing component of order"),
+            Self::BadProvince(s) => write!(f,"bad province \"{}\"",s),
+        }
+    }
+}
+
+impl Order{
+    pub fn to_bytes(&self)->Vec<u8>{
+        match self{
+            Self::Move(ty,fm,to) => vec![0 | ty.to_u1()<<2,fm.to_u7(),to.to_u7()],
+            Self::Hold(ty,prov) => vec![1 | ty.to_u1()<<2,prov.to_u7()],
+            Self::Support(ty,prov,t_ty,t_fm,t_to) => vec![2 | ty.to_u1()<<2 | t_ty.to_u1()<<3,prov.to_u7(),t_fm.to_u7(),t_to.to_u7()],
+            Self::Convoy(ty,prov,t_ty,t_fm,t_to) => vec![3 | ty.to_u1()<<2 | t_ty.to_u1()<<3,prov.to_u7(),t_fm.to_u7(),t_to.to_u7()],
+        }
+    }
+}
+
+impl Province{
+    fn to_u7(&self)->u8{
+        self.0
+    }
+}
+
+impl UnitType{
+    fn to_u1(&self)->u8{
+        match self{
+            Self::Army => 0,
+            Self::Fleet => 1,
+
+        }
+    }
+}
+    
+
+
 
 lazy_static! {
     static ref PROVINCE_IDS: HashMap<String, u8> = {
