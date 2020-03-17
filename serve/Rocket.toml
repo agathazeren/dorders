@@ -1,2 +1,5 @@
 [global]
 template_dir = "templates"
+
+[development]
+log = "debug"
