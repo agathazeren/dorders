@@ -10,3 +10,9 @@ edition = "2018"
 stdweb = "0.4"
 dcore = {path = "../dcore"}
 blake2 = "0.8"
+hex = "0.4"
+
+[dependencies.rand]
+version = "0.7"
+features = ["stdweb"]
+

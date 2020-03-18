@@ -16,8 +16,9 @@ use std::str::FromStr;
 use dcore::order;
 use stdweb::web::IElement;
 use stdweb::web::INode;
-
-
+use hex;
+use rand::thread_rng;
+use rand::Rng;
 
 
 
@@ -30,12 +31,16 @@ fn init_ui(){
         .add_event_listener(move |_:ChangeEvent| {
             update_hash_cmp();
         });
-    console!(log,"Event Listeners added");
+    document().query_selector("#salt-gen").unwrap().unwrap()
+        .add_event_listener(move |_:ClickEvent|{
+            generate_new_salt();
+        });
     update_hash_cmp();
 }
                             
 fn proccess(){
     clear_parse_errors();
+    clear_salt_error();
     
     let orders_el:TextAreaElement = document().query_selector("#orders-raw").unwrap().unwrap().try_into().unwrap();
     let orders_value = orders_el.value();
@@ -55,6 +60,8 @@ fn proccess(){
         writeln!(orders_out,"{}",order.to_string()).unwrap();
         hasher.input(order.to_bytes());
     }
+    let salt_el: TextAreaElement = document().query_selector("#salt").unwrap().unwrap().try_into().unwrap();
+    hasher.input(hex::decode(salt_el.value()).unwrap_or_else(|_|{emit_salt_error();Vec::new()}));
     let orders_out = orders_out;
     let orders_out_el: TextAreaElement = document().query_selector("#orders-parsed").unwrap().unwrap().try_into().unwrap();
     orders_out_el.set_value(&orders_out);
@@ -71,7 +78,6 @@ fn update_hash_cmp(){
     let hash_match = hash.value() == hash_cmp.value();
     document().query_selector("#hash-cmp-match").unwrap().unwrap().set_attribute("style",if hash_match {"display:initial"} else {"display:none"}).unwrap();
     document().query_selector("#hash-cmp-differ").unwrap().unwrap().set_attribute("style",if hash_match {"display:none"} else {"display:initial"}).unwrap();
-   
 }
 
 fn emit_parse_error(e: order::ParseError){
@@ -88,11 +94,26 @@ fn clear_parse_errors(){
     }
 }
 
+fn emit_salt_error(){
+    let el = document().query_selector("#salt-err").unwrap().unwrap();
+    el.set_attribute("style","display:initial").unwrap();
+}
+
+fn clear_salt_error(){
+    let el = document().query_selector("#salt-err").unwrap().unwrap();
+    el.set_attribute("style","display:none").unwrap();
+}
+
+fn generate_new_salt(){
+    let mut salt = [0u8;32];
+    thread_rng().fill(&mut salt);
+    let el: TextAreaElement = document().query_selector("#salt").unwrap().unwrap().try_into().unwrap();
+    el.set_value(&hex::encode(salt));
+}
+    
 
 fn main(){
-    console!(log,"main");
     init_ui();
-    console!(log,"done");
 }
 
 
