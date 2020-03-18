@@ -65,7 +65,7 @@ fn main() {
     rocket::custom(
         ConfigBuilder::new(ENVIRONMENT)
             .port(std::env::vars().find(|(var,_)|var=="PORT").unwrap_or(("".to_string(),"8000".to_string())).1.parse::<u16>().unwrap())
-            .extra("template_dir","../../serve/templates")
+            .extra("template_dir","serve/templates")
             .log_level(LoggingLevel::Debug)
             .finalize().unwrap())
         .mount("/",routes![
