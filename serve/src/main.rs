@@ -58,7 +58,7 @@ fn client_code(file:PathBuf)->Result<NamedFile,FetchError>{
 fn main() {
     rocket::custom(
         ConfigBuilder::new()
-            .port(std::env::vars().find(|(var,_)|var=="PATH").unwrap_or("8000").1.parse::<u16>().unwrap())
+            .port(std::env::vars().find(|(var,_)|var=="PATH").unwrap_or(("","8000")).1.parse::<u16>().unwrap())
             .extra("template_dir","templates")
             .finalize())
         .mount("/",routes![
