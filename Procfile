@@ -1,1 +1,1 @@
-web: ROCKET_PORT=$PORT target/release/dorders
+web: target/release/dorders
