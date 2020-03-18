@@ -13,6 +13,8 @@ use rocket::response;
 use rocket::Request;
 use rocket::response::Responder;
 use rocket::http::Status;
+use rocket::config::ConfigBuilder;
+use rocket::config::Environment;
 
 
 #[get("/")]
@@ -52,15 +54,19 @@ fn client_code(file:PathBuf)->Result<NamedFile,FetchError>{
     }))?)
 }
 
-                    
+#[cfg(debug_assertions)]                    
+static ENVIRONMENT: Environment = Environment::Development;
+#[cfg(not(debug_assertions))]
+static ENVIRONMENT: Environment = Environment::Production;
+
 
 
 fn main() {
     rocket::custom(
-        ConfigBuilder::new()
-            .port(std::env::vars().find(|(var,_)|var=="PATH").unwrap_or(("","8000")).1.parse::<u16>().unwrap())
+        ConfigBuilder::new(ENVIRONMENT)
+            .port(std::env::vars().find(|(var,_)|var=="PORT").unwrap_or(("".to_string(),"8000".to_string())).1.parse::<u16>().unwrap())
             .extra("template_dir","templates")
-            .finalize())
+            .finalize().unwrap())
         .mount("/",routes![
             index,
             client_code,
