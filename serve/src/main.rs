@@ -48,8 +48,8 @@ impl From<io::Error> for FetchError{
 #[get("/<file..>")]
 fn client_code(file:PathBuf)->Result<NamedFile,FetchError>{
     Ok(dbg!(NamedFile::open(match file.to_str().ok_or(FetchError::NotFound)?{
-        "client.js"=>PathBuf::from("../target/deploy/client.js"),
-        "client.wasm"=>PathBuf::from("../target/deploy/client.wasm"),
+        "client.js"=>PathBuf::from("target/deploy/client.js"),
+        "client.wasm"=>PathBuf::from("target/deploy/client.wasm"),
         _ => return Err(FetchError::NotFound)
     }))?)
 }
