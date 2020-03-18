@@ -45,6 +45,8 @@ fn proccess(){
     let orders_el:TextAreaElement = document().query_selector("#orders-raw").unwrap().unwrap().try_into().unwrap();
     let orders_value = orders_el.value();
     let orders_res = orders_value.lines()
+        .map(str::trim)
+        .filter(|l|!l.is_empty())
         .map(Order::from_str);
     let mut orders = Vec::new();
     for order_res in orders_res{
